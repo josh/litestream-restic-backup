@@ -10,8 +10,8 @@ keywords:
   - restic
   - backup
   - cronjob
-home: https://github.com/joshpeek/litestream-restic-backup
+home: https://github.com/josh/litestream-restic-backup
 sources:
-  - https://github.com/joshpeek/litestream-restic-backup
+  - https://github.com/josh/litestream-restic-backup
 maintainers:
   - name: josh

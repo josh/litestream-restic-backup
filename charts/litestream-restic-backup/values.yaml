@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/joshpeek/litestream-restic-backup
+  repository: ghcr.io/josh/litestream-restic-backup
   tag: ""
   digest: ""
   pullPolicy: IfNotPresent
