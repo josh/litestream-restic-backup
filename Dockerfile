@@ -4,7 +4,7 @@ ARG RESTIC_AGE_KEY_VERSION=1.1.3
 ARG AGE_VERSION=1.3.1
 
 
-FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601 AS tools
+FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS tools
 
 ARG LITESTREAM_VERSION
 ARG RESTIC_VERSION
@@ -49,7 +49,7 @@ RUN set -o errexit; \
     rm restic-age-key.tar.gz
 
 
-FROM alpine:3.22@sha256:310c62b5e7ca5b08167e4384c68db0fd2905dd9c7493756d356e893909057601
+FROM alpine:3.24.1@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 
 LABEL org.opencontainers.image.title="litestream-restic-backup" \
       org.opencontainers.image.source="https://github.com/joshpeek/litestream-restic-backup"
