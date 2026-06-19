@@ -14,29 +14,25 @@ startingDeadlineSeconds: 600
 successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 5
 backoffLimit: 2
-# ttlSecondsAfterFinished: 86400
 
 database:
-  name: app # pod hostname -> restic host; must be a DNS label
+  name: app
 
-# You provide the Secrets — the chart never creates them. Each existingSecret is exposed to
-# the container via envFrom, so its keys become env vars directly.
-
-# Set replicaURL, or a verbatim config (its db `path` must be /work/db.sqlite), or existingConfigSecret.
-# replicaURL/config render to a ConfigMap — keep creds out; use existingConfigSecret for those.
 litestream:
   replicaURL: ""
   config: ""
-  existingConfigSecret: "" # Secret holding the config (for credential-bearing configs)
-  configKey: litestream.yml # key/filename within the ConfigMap or Secret
-  # Source-replica credentials. Expected keys: LITESTREAM_ACCESS_KEY_ID, LITESTREAM_SECRET_ACCESS_KEY.
-  # Set to "" if the replica needs no creds (e.g. file://).
+  existingConfigSecret: ""
+  configKey: litestream.yml
   existingSecret: litestream
 
 restic:
   repository: ""
-  # Restic credentials. Expected keys: RESTIC_PASSWORD (+ backend creds like AWS_* if needed).
   existingSecret: restic
+  tag: litestream
+  ageIdentity:
+    existingSecret: ""
+    secretKey: RESTIC_AGE_IDENTITY
+    mountPath: /run/secrets/restic-age-identity
 
 extraEnv: []
 

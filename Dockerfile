@@ -60,8 +60,10 @@ COPY --from=tools /out/litestream     /usr/local/bin/litestream
 COPY --from=tools /out/restic         /usr/local/bin/restic
 COPY --from=tools /out/restic-age-key /usr/local/bin/restic-age-key
 COPY --from=tools /out/age            /usr/local/bin/age
+COPY backup.sh                        /usr/local/bin/backup.sh
 
-RUN adduser -D -H -u 65532 -s /sbin/nologin backup \
+RUN chmod 0755 /usr/local/bin/backup.sh \
+ && adduser -D -H -u 65532 -s /sbin/nologin backup \
  && mkdir --parents /work \
  && chown backup:backup /work
 
@@ -69,3 +71,4 @@ USER 65532:65532
 ENV TMPDIR=/work \
     RESTIC_CACHE_DIR=/work/.restic-cache
 WORKDIR /work
+CMD ["backup.sh"]

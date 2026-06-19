@@ -37,17 +37,18 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               securityContext:
                 {{- toYaml .Values.securityContext | nindent 16 }}
-              # Statically-generated script: restore (with integrity check) then archive.
-              command: ["/bin/sh", "-c"]
-              args:
-                - |
-                  set -o errexit
-                  set -o xtrace
-                  litestream restore -force -integrity-check full /work/db.sqlite
-                  restic backup --host {{ .Values.database.name | quote }} --tag litestream /work/db.sqlite
+              command: ["backup.sh"]
               env:
                 - name: RESTIC_REPOSITORY
                   value: {{ .Values.restic.repository | quote }}
+                - name: RESTIC_HOST
+                  value: {{ .Values.database.name | quote }}
+                - name: RESTIC_TAG
+                  value: {{ .Values.restic.tag | quote }}
+                {{- with .Values.restic.ageIdentity.existingSecret }}
+                - name: RESTIC_AGE_IDENTITY_FILE
+                  value: {{ $.Values.restic.ageIdentity.mountPath | quote }}
+                {{- end }}
                 {{- with .Values.extraEnv }}
                 {{- toYaml . | nindent 16 }}
                 {{- end }}
@@ -69,6 +70,14 @@ spec:
                   mountPath: /etc/litestream.yml
                   subPath: {{ .Values.litestream.configKey }}
                   readOnly: true
+                {{- with .Values.restic.ageIdentity.existingSecret }}
+                - name: restic-secrets
+                  mountPath: /run/secrets
+                - name: restic-age-identity
+                  mountPath: {{ $.Values.restic.ageIdentity.mountPath }}
+                  subPath: identity
+                  readOnly: true
+                {{- end }}
               {{- with .Values.resources }}
               resources:
                 {{- toYaml . | nindent 16 }}
@@ -85,6 +94,16 @@ spec:
               configMap:
                 name: {{ include "litestream-restic-backup.configMapName" . }}
               {{- end }}
+            {{- with .Values.restic.ageIdentity.existingSecret }}
+            - name: restic-secrets
+              emptyDir: {}
+            - name: restic-age-identity
+              secret:
+                secretName: {{ . }}
+                items:
+                  - key: {{ $.Values.restic.ageIdentity.secretKey }}
+                    path: identity
+            {{- end }}
           {{- with .Values.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
