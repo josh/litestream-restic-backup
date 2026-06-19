@@ -7,6 +7,7 @@ x() {
 }
 
 db_path="${DB_PATH:-/work/db.sqlite}"
+db_name="$(basename "$db_path")"
 
 x litestream restore -force -integrity-check full "$db_path"
 
@@ -23,4 +24,5 @@ fi
 x restic backup \
 	--host "${RESTIC_HOST:-$(hostname)}" \
 	--tag "${RESTIC_TAG:-litestream}" \
-	"$db_path"
+	--stdin --stdin-filename "$db_name" \
+	<"$db_path"
