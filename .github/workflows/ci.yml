@@ -1,0 +1,71 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Helm
+        env:
+          HELM_VERSION: v4.2.2
+          HELM_SHA256: 9adafecab4d406853bba163a70e9f104f47dbbf65ce24b7653bae7e36150bcb6
+        run: |
+          curl --fail --silent --show-error --location --output helm.tar.gz \
+            "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz"
+          echo "${HELM_SHA256}  helm.tar.gz" | sha256sum -c -
+          tar --extract --gzip --file helm.tar.gz
+          sudo install -m 0755 linux-amd64/helm /usr/local/bin/helm
+
+      - name: helm lint
+        run: |
+          helm lint charts/litestream-restic-backup \
+            --set litestream.replicaURL=file:///replica/app \
+            --set restic.repository=/resticrepo \
+            --set restic.existingSecret=creds
+
+      - name: helm template (URL mode)
+        run: |
+          helm template t charts/litestream-restic-backup \
+            --set litestream.replicaURL=file:///replica/app \
+            --set restic.repository=/resticrepo \
+            --set restic.existingSecret=creds
+
+      - name: helm template (config mode)
+        run: |
+          helm template t charts/litestream-restic-backup \
+            --set litestream.config='dbs: []' \
+            --set restic.repository=/resticrepo \
+            --set restic.existingSecret=creds
+
+  build:
+    name: build (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
+        env:
+          SOURCE_DATE_EPOCH: 0

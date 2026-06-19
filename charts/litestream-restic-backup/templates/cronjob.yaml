@@ -1,0 +1,99 @@
+{{- include "litestream-restic-backup.validate" . -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "litestream-restic-backup.fullname" . }}
+  labels:
+    {{- include "litestream-restic-backup.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  concurrencyPolicy: {{ .Values.concurrencyPolicy }}
+  {{- with .Values.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ . }}
+  {{- end }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      {{- with .Values.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "litestream-restic-backup.selectorLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          containers:
+            - name: backup
+              image: {{ include "litestream-restic-backup.image" . | quote }}
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              # Statically-generated script: restore (with integrity check) then archive.
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -o errexit
+                  set -o xtrace
+                  litestream restore -force -integrity-check full /work/db.sqlite
+                  restic backup --host {{ .Values.database.name | quote }} --tag litestream /work/db.sqlite
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: {{ .Values.restic.repository | quote }}
+                {{- with .Values.extraEnv }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              {{- if or .Values.litestream.existingSecret .Values.restic.existingSecret }}
+              envFrom:
+                {{- with .Values.litestream.existingSecret }}
+                - secretRef:
+                    name: {{ . }}
+                {{- end }}
+                {{- with .Values.restic.existingSecret }}
+                - secretRef:
+                    name: {{ . }}
+                {{- end }}
+              {{- end }}
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: litestream-config
+                  mountPath: /etc/litestream.yml
+                  subPath: {{ .Values.litestream.configKey }}
+                  readOnly: true
+              {{- with .Values.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+          volumes:
+            - name: work
+              emptyDir:
+                sizeLimit: {{ .Values.work.sizeLimit }}
+            - name: litestream-config
+              {{- if .Values.litestream.existingConfigSecret }}
+              secret:
+                secretName: {{ .Values.litestream.existingConfigSecret }}
+              {{- else }}
+              configMap:
+                name: {{ include "litestream-restic-backup.configMapName" . }}
+              {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

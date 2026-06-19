@@ -1,0 +1,11 @@
+{{- if not .Values.litestream.existingConfigSecret }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "litestream-restic-backup.configMapName" . }}
+  labels:
+    {{- include "litestream-restic-backup.labels" . | nindent 4 }}
+data:
+  {{ .Values.litestream.configKey }}: |
+    {{- include "litestream-restic-backup.litestreamConfig" . | nindent 4 }}
+{{- end }}

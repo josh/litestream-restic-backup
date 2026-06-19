@@ -1,0 +1,17 @@
+apiVersion: v2
+name: litestream-restic-backup
+description: Back up a Litestream SQLite replica to restic, on a schedule.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - sqlite
+  - litestream
+  - restic
+  - backup
+  - cronjob
+home: https://github.com/joshpeek/litestream-restic-backup
+sources:
+  - https://github.com/joshpeek/litestream-restic-backup
+maintainers:
+  - name: josh
