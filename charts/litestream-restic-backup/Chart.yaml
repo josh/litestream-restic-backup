@@ -2,8 +2,8 @@ apiVersion: v2
 name: litestream-restic-backup
 description: Back up a Litestream SQLite replica to restic, on a schedule.
 type: application
-version: "0.2.1"
-appVersion: "0.2.1"
+version: "0.2.2"
+appVersion: "0.2.2"
 keywords:
   - sqlite
   - litestream
