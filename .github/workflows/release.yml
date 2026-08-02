@@ -27,7 +27,7 @@ jobs:
         type=semver,pattern={{version}}
         type=raw,value=latest
       labels: |
-        org.opencontainers.image.version=${{ github.ref_name }}
+        org.opencontainers.image.version={{meta.version}}
         org.opencontainers.image.revision=${{ github.sha }}
     secrets:
       registry-auths: |
