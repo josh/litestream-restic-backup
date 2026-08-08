@@ -36,6 +36,44 @@ restic:
 
 extraEnv: []
 
+# Pod NetworkPolicies for this release's job pods, split by direction so each can
+# be enabled independently. Both are off by default, so upgrading an existing
+# release changes nothing.
+#
+# Because the policies select only this release's pods, several releases can sit
+# in one namespace without their rules overlapping — each job reaches its own
+# repository and replica store and nothing else.
+#
+# Enabling a direction makes it an allowlist; there is no permit-everything mode.
+networkPolicy:
+  ingress:
+    # The job accepts no connections, so enabling this with `from` empty renders
+    # a deny-all policy, which is the intended configuration.
+    enabled: false
+    from: []
+  egress:
+    # DNS is always included: neither endpoint can be resolved without it.
+    enabled: false
+    # NetworkPolicyPeer entries limiting where DNS may be sent. Empty leaves the
+    # rule destination-agnostic, so it works with CoreDNS, kube-dns, and
+    # node-local DNS without assuming cluster-specific labels or addresses.
+    dnsTo: []
+    # Egress to restic.repository. NetworkPolicy is L3/L4-only and cannot resolve
+    # a URL, so name the peers yourself; port must match the one in the URL.
+    restic:
+      to: []
+      port: 8000
+    # Egress to the litestream replica (litestream.replicaURL, or whatever
+    # litestream.config points at). Port must match that endpoint — S3 over TLS
+    # is 443, but an in-cluster gateway is commonly something else.
+    litestream:
+      to: []
+      port: 443
+    # Complete NetworkPolicyEgressRule entries for any other destination. Also
+    # the escape hatch when litestream.config points somewhere the two slots
+    # above cannot express.
+    extraRules: []
+
 work:
   sizeLimit: 5Gi
 

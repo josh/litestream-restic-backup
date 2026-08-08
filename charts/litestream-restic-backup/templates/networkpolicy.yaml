@@ -1,0 +1,71 @@
+{{- include "litestream-restic-backup.validate" . -}}
+{{- if .Values.networkPolicy.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "%s-ingress" (include "litestream-restic-backup.fullname" .) }}
+  labels:
+    {{- include "litestream-restic-backup.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "litestream-restic-backup.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  {{- with .Values.networkPolicy.ingress.from }}
+  ingress:
+    - from:
+        {{- toYaml . | nindent 8 }}
+  {{- else }}
+  # The job accepts no connections, so the usual case is a deny-all policy.
+  ingress: []
+  {{- end }}
+{{- end }}
+{{- if and .Values.networkPolicy.ingress.enabled .Values.networkPolicy.egress.enabled }}
+---
+{{- end }}
+{{- if .Values.networkPolicy.egress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "%s-egress" (include "litestream-restic-backup.fullname" .) }}
+  labels:
+    {{- include "litestream-restic-backup.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "litestream-restic-backup.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Egress
+  egress:
+    # Always present: neither endpoint can be resolved without it.
+    # Destination-agnostic unless dnsTo names the cluster's resolvers.
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+      {{- with .Values.networkPolicy.egress.dnsTo }}
+      to:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.networkPolicy.egress.restic.to }}
+    # The repository behind restic.repository.
+    - to:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - protocol: TCP
+          port: {{ $.Values.networkPolicy.egress.restic.port | int }}
+    {{- end }}
+    {{- with .Values.networkPolicy.egress.litestream.to }}
+    # The replica store behind litestream.replicaURL.
+    - to:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - protocol: TCP
+          port: {{ $.Values.networkPolicy.egress.litestream.port | int }}
+    {{- end }}
+    {{- with .Values.networkPolicy.egress.extraRules }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

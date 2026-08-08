@@ -76,4 +76,13 @@ dbs:
 {{- if not .Values.restic.repository -}}
 {{- fail "restic.repository is required" -}}
 {{- end -}}
+{{- if .Values.networkPolicy.egress.enabled -}}
+{{- $extra := .Values.networkPolicy.egress.extraRules -}}
+{{- if not (or .Values.networkPolicy.egress.restic.to $extra) -}}
+{{- fail "networkPolicy.egress.enabled needs peers reaching restic.repository; set networkPolicy.egress.restic.to" -}}
+{{- end -}}
+{{- if not (or .Values.networkPolicy.egress.litestream.to $extra) -}}
+{{- fail "networkPolicy.egress.enabled needs peers reaching the litestream replica; set networkPolicy.egress.litestream.to" -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
