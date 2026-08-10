@@ -57,12 +57,13 @@ LABEL org.opencontainers.image.title="litestream-restic-backup" \
 RUN apk add --no-cache ca-certificates
 
 COPY --from=tools /out/litestream     /usr/local/bin/litestream
-COPY --from=tools /out/restic         /usr/local/bin/restic
+COPY --from=tools /out/restic         /usr/local/libexec/restic
 COPY --from=tools /out/restic-age-key /usr/local/bin/restic-age-key
 COPY --from=tools /out/age            /usr/local/bin/age
 COPY backup.sh                        /usr/local/bin/backup.sh
+COPY restic-wrapper.sh                /usr/local/bin/restic
 
-RUN chmod 0755 /usr/local/bin/backup.sh \
+RUN chmod 0755 /usr/local/bin/backup.sh /usr/local/bin/restic \
  && adduser -D -H -u 65532 -s /sbin/nologin backup \
  && mkdir --parents /work \
  && chown backup:backup /work
