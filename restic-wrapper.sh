@@ -3,6 +3,20 @@ set -o errexit
 
 restic="/usr/local/libexec/restic"
 
+if [ -z "${GOMEMLIMIT:-}" ]; then
+	for f in /sys/fs/cgroup/memory.max /sys/fs/cgroup/memory/memory.limit_in_bytes; do
+		[ -r "$f" ] || continue
+		limit="$(cat "$f")"
+		case "$limit" in
+		'' | *[!0-9]*) continue ;;
+		esac
+		[ "$limit" -lt 576460752303423488 ] || continue
+		GOMEMLIMIT="$((limit * 9 / 10))B"
+		export GOMEMLIMIT
+		break
+	done
+fi
+
 age_identity=""
 if [ -n "${RESTIC_AGE_IDENTITY_FILE:-}" ] || [ -n "${RESTIC_AGE_IDENTITY_COMMAND:-}" ]; then
 	age_identity="1"
