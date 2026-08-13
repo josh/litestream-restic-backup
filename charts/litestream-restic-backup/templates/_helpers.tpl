@@ -76,6 +76,9 @@ dbs:
 {{- if not .Values.restic.repository -}}
 {{- fail "restic.repository is required" -}}
 {{- end -}}
+{{- if .Values.database -}}
+{{- fail "database.name is now restic.host" -}}
+{{- end -}}
 {{- if .Values.networkPolicy.egress.enabled -}}
 {{- $extra := .Values.networkPolicy.egress.extraRules -}}
 {{- if not (or .Values.networkPolicy.egress.restic.to $extra) -}}

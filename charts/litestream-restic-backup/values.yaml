@@ -15,9 +15,6 @@ successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 5
 backoffLimit: 2
 
-database:
-  name: app
-
 litestream:
   replicaURL: ""
   config: ""
@@ -28,6 +25,9 @@ litestream:
 restic:
   repository: ""
   existingSecret: restic
+  # Snapshot host. Must be stable across runs and unique per database, since
+  # `restic forget` groups by host+paths. Defaults to the release's full name.
+  host: ""
   tag: litestream
   ageIdentity:
     existingSecret: ""
