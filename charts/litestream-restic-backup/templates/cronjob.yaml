@@ -8,16 +8,16 @@ metadata:
 spec:
   schedule: {{ .Values.schedule | quote }}
   concurrencyPolicy: {{ .Values.concurrencyPolicy }}
-  {{- with .Values.startingDeadlineSeconds }}
-  startingDeadlineSeconds: {{ . }}
+  {{- if or (eq (toString .Values.startingDeadlineSeconds) "0") .Values.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ .Values.startingDeadlineSeconds }}
   {{- end }}
   successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
   failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
   jobTemplate:
     spec:
       backoffLimit: {{ .Values.backoffLimit }}
-      {{- with .Values.ttlSecondsAfterFinished }}
-      ttlSecondsAfterFinished: {{ . }}
+      {{- if or (eq (toString .Values.ttlSecondsAfterFinished) "0") .Values.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ .Values.ttlSecondsAfterFinished }}
       {{- end }}
       template:
         metadata:
