@@ -72,8 +72,6 @@ spec:
                   subPath: {{ .Values.litestream.configKey }}
                   readOnly: true
                 {{- with .Values.restic.ageIdentity.existingSecret }}
-                - name: restic-secrets
-                  mountPath: /run/secrets
                 - name: restic-age-identity
                   mountPath: {{ $.Values.restic.ageIdentity.mountPath }}
                   subPath: identity
@@ -96,8 +94,6 @@ spec:
                 name: {{ include "litestream-restic-backup.configMapName" . }}
               {{- end }}
             {{- with .Values.restic.ageIdentity.existingSecret }}
-            - name: restic-secrets
-              emptyDir: {}
             - name: restic-age-identity
               secret:
                 secretName: {{ . }}
