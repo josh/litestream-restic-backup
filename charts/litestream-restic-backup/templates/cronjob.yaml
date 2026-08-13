@@ -83,8 +83,7 @@ spec:
               {{- end }}
           volumes:
             - name: work
-              emptyDir:
-                sizeLimit: {{ .Values.work.sizeLimit }}
+              emptyDir: {}
             - name: litestream-config
               {{- if .Values.litestream.existingConfigSecret }}
               secret:

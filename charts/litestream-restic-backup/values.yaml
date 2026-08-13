@@ -10,10 +10,11 @@ fullnameOverride: ""
 
 schedule: "0 * * * *"
 concurrencyPolicy: Forbid
-startingDeadlineSeconds: 600
+startingDeadlineSeconds: ""
 successfulJobsHistoryLimit: 3
 failedJobsHistoryLimit: 5
 backoffLimit: 2
+ttlSecondsAfterFinished: ""
 automountServiceAccountToken: false
 
 litestream:
@@ -74,9 +75,6 @@ networkPolicy:
     # the escape hatch when litestream.config points somewhere the two slots
     # above cannot express.
     extraRules: []
-
-work:
-  sizeLimit: 5Gi
 
 resources: {}
 nodeSelector: {}
