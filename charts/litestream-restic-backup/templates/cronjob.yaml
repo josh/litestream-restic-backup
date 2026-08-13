@@ -42,7 +42,7 @@ spec:
                 - name: RESTIC_REPOSITORY
                   value: {{ .Values.restic.repository | quote }}
                 - name: RESTIC_HOST
-                  value: {{ .Values.database.name | quote }}
+                  value: {{ .Values.restic.host | default (include "litestream-restic-backup.fullname" .) | quote }}
                 - name: RESTIC_TAG
                   value: {{ .Values.restic.tag | quote }}
                 {{- with .Values.restic.ageIdentity.existingSecret }}
