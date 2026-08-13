@@ -17,8 +17,7 @@ if [ -n "${RESTIC_AWS_ACCESS_KEY_ID:-}" ]; then
 fi
 
 if [ -n "${RESTIC_AGE_IDENTITY_FILE:-}" ]; then
-	x restic-age-key password >/run/secrets/restic-password
-	export RESTIC_PASSWORD_FILE=/run/secrets/restic-password
+	export RESTIC_PASSWORD_COMMAND="restic-age-key password"
 fi
 
 x restic backup \
