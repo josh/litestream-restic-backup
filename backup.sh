@@ -14,6 +14,11 @@ x litestream restore -force -integrity-check full "$db_path"
 if [ -n "${RESTIC_AWS_ACCESS_KEY_ID:-}" ]; then
 	export AWS_ACCESS_KEY_ID="$RESTIC_AWS_ACCESS_KEY_ID"
 	export AWS_SECRET_ACCESS_KEY="$RESTIC_AWS_SECRET_ACCESS_KEY"
+	if [ -n "${RESTIC_AWS_SESSION_TOKEN:-}" ]; then
+		export AWS_SESSION_TOKEN="$RESTIC_AWS_SESSION_TOKEN"
+	else
+		unset AWS_SESSION_TOKEN
+	fi
 fi
 
 if [ -n "${RESTIC_AGE_IDENTITY_FILE:-}" ]; then
