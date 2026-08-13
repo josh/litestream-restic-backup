@@ -45,33 +45,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
-{{/* Name of the chart-generated ConfigMap holding the litestream config. */}}
-{{- define "litestream-restic-backup.configMapName" -}}
-{{- printf "%s-litestream" (include "litestream-restic-backup.fullname" .) -}}
-{{- end -}}
-
-{{/* litestream.yml content: verbatim config if given, else synthesized from replicaURL.
-     This is a ConfigMap (not a Secret) — keep credentials out of it; use an
-     existingConfigSecret for credential-bearing configs. backup.sh restores the db at the
-     fixed path /work/db.sqlite, so the db `path` here must match that. */}}
-{{- define "litestream-restic-backup.litestreamConfig" -}}
-{{- if .Values.litestream.config -}}
-{{ .Values.litestream.config }}
-{{- else -}}
-dbs:
-  - path: /work/db.sqlite
-    replicas:
-      - url: {{ .Values.litestream.replicaURL | quote }}
-{{- end -}}
-{{- end -}}
-
 {{- define "litestream-restic-backup.validate" -}}
-{{- if .Values.litestream.existingConfigSecret -}}
-  {{/* user supplies the whole config; nothing to require here */}}
-{{- else if and .Values.litestream.replicaURL .Values.litestream.config -}}
-{{- fail "set only one of litestream.replicaURL or litestream.config" -}}
-{{- else if and (not .Values.litestream.replicaURL) (not .Values.litestream.config) -}}
-{{- fail "set litestream.replicaURL (or litestream.config / existingConfigSecret)" -}}
+{{- if not .Values.litestream.replicaURL -}}
+{{- fail "litestream.replicaURL is required" -}}
 {{- end -}}
 {{- if not .Values.restic.repository -}}
 {{- fail "restic.repository is required" -}}

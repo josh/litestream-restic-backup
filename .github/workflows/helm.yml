@@ -36,9 +36,10 @@ jobs:
             --set restic.repository=/resticrepo \
             --set restic.existingSecret=creds
 
-      - name: helm template (config mode)
+      - name: helm template (age identity)
         run: |
           helm template t charts/litestream-restic-backup \
-            --set litestream.config='dbs: []' \
+            --set litestream.replicaURL=file:///replica/app \
             --set restic.repository=/resticrepo \
-            --set restic.existingSecret=creds
+            --set restic.existingSecret=creds \
+            --set restic.ageIdentity.existingSecret=creds

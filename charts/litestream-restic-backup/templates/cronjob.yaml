@@ -40,6 +40,8 @@ spec:
                 {{- toYaml .Values.securityContext | nindent 16 }}
               command: ["backup.sh"]
               env:
+                - name: LITESTREAM_REPLICA_URL
+                  value: {{ .Values.litestream.replicaURL | quote }}
                 - name: RESTIC_REPOSITORY
                   value: {{ .Values.restic.repository | quote }}
                 - name: RESTIC_HOST
@@ -67,10 +69,6 @@ spec:
               volumeMounts:
                 - name: work
                   mountPath: /work
-                - name: litestream-config
-                  mountPath: /etc/litestream.yml
-                  subPath: {{ .Values.litestream.configKey }}
-                  readOnly: true
                 {{- with .Values.restic.ageIdentity.existingSecret }}
                 - name: restic-age-identity
                   mountPath: {{ $.Values.restic.ageIdentity.mountPath }}
@@ -84,14 +82,6 @@ spec:
           volumes:
             - name: work
               emptyDir: {}
-            - name: litestream-config
-              {{- if .Values.litestream.existingConfigSecret }}
-              secret:
-                secretName: {{ .Values.litestream.existingConfigSecret }}
-              {{- else }}
-              configMap:
-                name: {{ include "litestream-restic-backup.configMapName" . }}
-              {{- end }}
             {{- with .Values.restic.ageIdentity.existingSecret }}
             - name: restic-age-identity
               secret:

@@ -19,9 +19,6 @@ automountServiceAccountToken: false
 
 litestream:
   replicaURL: ""
-  config: ""
-  existingConfigSecret: ""
-  configKey: litestream.yml
   existingSecret: litestream
 
 restic:
@@ -65,15 +62,13 @@ networkPolicy:
     restic:
       to: []
       port: 8000
-    # Egress to the litestream replica (litestream.replicaURL, or whatever
-    # litestream.config points at). Port must match that endpoint — S3 over TLS
-    # is 443, but an in-cluster gateway is commonly something else.
+    # Egress to the litestream replica behind litestream.replicaURL. Port must
+    # match that endpoint — S3 over TLS is 443, but an in-cluster gateway is
+    # commonly something else.
     litestream:
       to: []
       port: 443
-    # Complete NetworkPolicyEgressRule entries for any other destination. Also
-    # the escape hatch when litestream.config points somewhere the two slots
-    # above cannot express.
+    # Complete NetworkPolicyEgressRule entries for any other destination.
     extraRules: []
 
 resources: {}
