@@ -22,7 +22,6 @@ if [ -n "${RESTIC_AGE_IDENTITY_FILE:-}" ]; then
 fi
 
 x restic backup \
-	--host "${RESTIC_HOST:-$(hostname)}" \
 	--tag "${RESTIC_TAG:-litestream}" \
 	--stdin --stdin-filename "$db_name" \
 	<"$db_path"
