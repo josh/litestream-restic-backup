@@ -25,6 +25,7 @@ spec:
             {{- include "litestream-restic-backup.selectorLabels" . | nindent 12 }}
         spec:
           restartPolicy: Never
+          automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
           {{- with .Values.imagePullSecrets }}
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
